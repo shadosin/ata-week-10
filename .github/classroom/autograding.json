@@ -1,0 +1,84 @@
+{
+  "tests": [
+    {
+      "name": "Actor Movie Test",
+      "setup": "",
+      "run": "./gradlew dynamodb-annotations-actor-movie-test",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 11,
+      "points": 1
+    },
+    {
+      "name": "Ice Cream Parlor Test",
+      "setup": "",
+      "run": "./gradlew customexceptions-icecreamparlor-phase5",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 1
+    },
+    {
+      "name": "User Exists Exception Test",
+      "setup": "",
+      "run": "./gradlew customexceptions-userexistsexception-test",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 1
+    },
+    {
+      "name": "Video Games",
+      "setup": "",
+      "run": "./gradlew dynamodb-annotations-video-game-test",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 1
+    },
+    {
+      "name": "Creating a Book",
+      "setup": "",
+      "run": "./gradlew dynamodb-annotations-creating-a-book-test",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 1
+    },
+    {
+      "name": "Loading a Book",
+      "setup": "",
+      "run": "./gradlew dynamodb-annotations-load-test",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 1
+    },
+    {
+      "name": "Saving a Book",
+      "setup": "",
+      "run": "./gradlew dynamodb-annotations-save-test",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 1
+    },
+    {
+      "name": "Group Work",
+      "setup": "",
+      "run": "./gradlew groupwork-discussion-test",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": 1
+    }
+  ]
+}
