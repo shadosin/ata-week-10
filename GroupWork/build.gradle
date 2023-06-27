@@ -1,0 +1,64 @@
+plugins {
+    id 'ata-curriculum.snippets-conventions'
+    id 'ata-curriculum.integration-test-conventions'
+}
+
+checkstyle {
+    def suppressionFile = rootProject.file('Utilities/ATACheckstyle/configuration/checkstyle/unit1/suppressions.xml')
+    configProperties.put('checkstyle.suppression.filter', suppressionFile)
+}
+
+dependencies {
+    // Use JUnit test framework.
+    implementation('com.amazonaws:aws-java-sdk-s3:1.12.332')
+    implementation(platform('org.junit:junit-bom:5.9.0'))
+    implementation('org.junit.jupiter:junit-jupiter')
+}
+def wflowToTestsMap = [
+        'groupwork-discussion-test': [
+                'com.kenzie.discussion.ChangeTopicHandlerTest',
+                'com.kenzie.discussion.CreateTopicHandlerTest',
+                'com.kenzie.discussion.CreateTopicMessageHandlerTest',
+                'com.kenzie.discussion.LoginHandlerTest',
+                'com.kenzie.discussion.MemberDaoTest',
+                'com.kenzie.discussion.TopicDaoTest',
+                'com.kenzie.discussion.TopicMessageDaoTest',
+                'com.kenzie.discussion.ViewTopicMessagesHandlerTest',
+                'com.kenzie.discussion.ViewTopicsHandlerTest',
+        ],
+        'dynamodb-all-test': [
+                'com.kenzie.discussion.ViewTopicsHandlerTest',
+                'com.kenzie.discussion.ChangeTopicHandlerTest',
+                'com.kenzie.discussion.CreateTopicHandlerTest',
+                'com.kenzie.discussion.CreateTopicMessageHandlerTest',
+                'com.kenzie.discussion.LoginHandlerTest',
+                'com.kenzie.discussion.MemberDaoTest',
+                'com.kenzie.discussion.TopicDaoTest',
+                'com.kenzie.discussion.TopicMessageDaoTest',
+                'com.kenzie.discussion.ViewTopicMessagesHandlerTest',
+        ]
+]
+
+def wflowToMainClassMap = [
+        'groupwork-discussion-cli': 'com.kenzie.discussion.cli.DiscussionCliRunner'
+]
+
+repositories {
+    mavenCentral()
+}
+wflowToMainClassMap.forEach { wflowName, mainClass ->
+    tasks.register(wflowName) {
+        runMain.mainClass.set(mainClass)
+        dependsOn runMain
+    }
+}
+wflowToTestsMap.forEach { wflowName, testList ->
+    tasks.register(wflowName) {
+        dependsOn wflowtest
+        test.doFirst {
+            filter {
+                testList.each { includeTestsMatching it }
+            }
+        }
+    }
+}

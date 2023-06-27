@@ -1,0 +1,242 @@
+Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: dynamodbAccessRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - dynamodb:*
+              Resource: "*"
+            - Effect: Allow
+              Action:
+              - logs:*
+              Resource: "*"
+  InitFunctionMembers:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: >
+          const AWS = require("aws-sdk");
+          const response = require('./cfn-response');
+          const docClient = new AWS.DynamoDB.DocumentClient();
+          exports.handler = function(event, context) {
+            console.log(JSON.stringify(event,null,2));
+            var params = {
+              RequestItems: {
+                "GroupWork-Members" : [
+                  {
+                    PutRequest: {
+                      Item: {
+                        username: "joAnn*",
+                        isActive: true,
+                        karmaPointsAvailable: 20474
+                      }
+                    }
+                  }
+                ]
+              }
+            };
+            docClient.batchWrite(params, function(err, data) {
+              if (err) {
+                response.send(event, context, "FAILED", {});
+              } else {
+                response.send(event, context, "SUCCESS", {});
+              }
+            });
+          };
+      Handler: index.handler
+      Role:
+        Fn::GetAtt: [ LambdaRole , "Arn" ]
+      Runtime: nodejs14.x
+      Timeout: 60
+  GroupWorkMembers:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "GroupWork-Members"
+      AttributeDefinitions:
+        -
+          AttributeName: "username"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "username"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+  InitializeMembers:
+    Type: Custom::InitFunctionMembers
+    DependsOn: GroupWorkMembers
+    Properties:
+      ServiceToken:
+         Fn::GetAtt: [ InitFunctionMembers , "Arn" ]
+      DynamoTableName:
+        Ref: GroupWorkMembers
+  InitFunctionMessages:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: >
+          const AWS = require("aws-sdk");
+          const response = require('./cfn-response');
+          const docClient = new AWS.DynamoDB.DocumentClient();
+          exports.handler = function(event, context) {
+            console.log(JSON.stringify(event,null,2));
+            var params = {
+              RequestItems: {
+                "GroupWork-TopicMessages" : [
+                  {
+                    PutRequest: {
+                      Item: {
+                        topicName: "All about zebras",
+                        timestamp: "2020-01-17T09:40:00.000",
+                        author: "joAnn*",
+                        messageContent: "Zebras are strip-ed quadri-peds"
+                      }
+                    }
+                  }
+                ]
+              }
+            };
+            docClient.batchWrite(params, function(err, data) {
+              if (err) {
+                response.send(event, context, "FAILED", {});
+              } else {
+                response.send(event, context, "SUCCESS", {});
+              }
+            });
+          };
+      Handler: index.handler
+      Role:
+        Fn::GetAtt: [ LambdaRole , "Arn" ]
+      Runtime: nodejs14.x
+      Timeout: 60
+  GroupWorkTopicMessages:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "GroupWork-TopicMessages"
+      AttributeDefinitions:
+        - AttributeName: "topicName"
+          AttributeType: "S"
+        - AttributeName: "timestamp"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "topicName"
+          KeyType: "HASH"
+        - AttributeName: "timestamp"
+          KeyType: "RANGE"
+      BillingMode: PAY_PER_REQUEST
+  InitializeTopicMessages:
+    Type: Custom::InitFunctionMessages
+    DependsOn: GroupWorkTopicMessages
+    Properties:
+      ServiceToken:
+        Fn::GetAtt: [ InitFunctionMessages , "Arn" ]
+      DynamoTableName:
+        Ref: GroupWorkTopicMessages
+  InitFunctionTopics:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: >
+          const AWS = require("aws-sdk");
+          const response = require('./cfn-response');
+          const docClient = new AWS.DynamoDB.DocumentClient();
+          exports.handler = function(event, context) {
+            console.log(JSON.stringify(event,null,2));
+            var params = {
+              RequestItems: {
+                "GroupWork-Topics" : [
+                  {
+                    PutRequest: {
+                      Item: {
+                        name: "All about zebras",
+                        description: "Zebras are fascinating. It still baffles that every discussion we have ends up involving zebras. I hear no complaints, however.",
+                        isArchived: false
+                      }
+                    }
+                  },
+                  {
+                    PutRequest: {
+                      Item: {
+                        name: "Why am I tired all the time?",
+                        description: "Who knows! Maybe the rest of us.",
+                        isArchived: false
+                      }
+                    }
+                  },
+                  {
+                    PutRequest: {
+                      Item: {
+                        name: "Teeth are just bones that are kind of outside",
+                        description: "Sometimes true statements sound false. We like to celebrate that.",
+                        isArchived: false
+                      }
+                    }
+                  },
+                  {
+                    PutRequest: {
+                      Item: {
+                        name: "Favorite music",
+                        description: "Drop a mention of any tracks you've been enjoying lately!",
+                        isArchived: false
+                      }
+                    }
+                  },
+                  {
+                    PutRequest: {
+                      Item: {
+                        name: "Good doggos",
+                        description: "We're on the internet. It's basically required. Share cute dogs!",
+                        isArchived: false
+                      }
+                    }
+                  }
+                ]
+              }
+            };
+            docClient.batchWrite(params, function(err, data) {
+              if (err) {
+                response.send(event, context, "FAILED", {});
+              } else {
+                response.send(event, context, "SUCCESS", {});
+              }
+            });
+          };
+      Handler: index.handler
+      Role:
+        Fn::GetAtt: [ LambdaRole , "Arn" ]
+      Runtime: nodejs14.x
+      Timeout: 60
+  GroupWorkTopics:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "GroupWork-Topics"
+      AttributeDefinitions:
+        - AttributeName: "name"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "name"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+  InitializeTopics:
+    Type: Custom::InitFunctionTopics
+    DependsOn: GroupWorkTopics
+    Properties:
+      ServiceToken:
+        Fn::GetAtt: [ InitFunctionTopics , "Arn" ]
+      DynamoTableName:
+        Ref: GroupWorkTopics
+

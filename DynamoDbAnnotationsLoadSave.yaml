@@ -1,0 +1,126 @@
+Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: dynamodbAccessRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - dynamodb:*
+              Resource: !GetAtt DDBAnnotationsLoadSaveBooks.Arn
+  InitFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: >
+          const AWS = require("aws-sdk");
+          const response = require('./cfn-response');
+          const docClient = new AWS.DynamoDB.DocumentClient();
+          exports.handler = function(event, context) {
+              console.log(JSON.stringify(event,null,2));
+               var params = {
+                  RequestItems: {
+                   "DynamoDbAnnotationsLoadSave-Books": [
+                     {
+                      PutRequest: {
+                       Item: {
+                        asin: "B00EGMV00W",
+                        author: "Baldwin",
+                        title: "The Fire Next Time",
+                        year_published: 1963,
+                       }
+                      }
+                     },
+                     {
+                      PutRequest: {
+                       Item: {
+                        asin: "B0831PKRVL",
+                        author: "Fitzgerald",
+                        title: "The Great Gatsby",
+                        year_published: 1925,
+                       }
+                      }
+                     },
+                     {
+                      PutRequest: {
+                       Item: {
+                        asin: "B004UJTG6Q",
+                        author: "Twain",
+                        title: "The Adventures of Tom Sawyer",
+                        year_published: 1876,
+                       }
+                      }
+                     },
+                     {
+                      PutRequest: {
+                       Item: {
+                        asin: "B07YL3R5FQ",
+                        author: "Hemingway",
+                        title: "The Old Man and the Sea",
+                        year_published: 1952,
+                       }
+                      }
+                     },
+                     {
+                      PutRequest: {
+                       Item: {
+                        asin: "B00K0OI42W",
+                        author: "Lee",
+                        title: "To Kill a Mockingbird",
+                        year_published: 1960,
+                       }
+                      }
+                     }
+                    ]
+                  }
+                 };
+                 docClient.batchWrite(params, function(err, data) { if (err) {
+                    response.send(event, context, "FAILED", {});
+                  } else {
+                    response.send(event, context, "SUCCESS", {});
+                  }
+                });
+              };
+      Handler: index.handler
+      Role:
+        Fn::GetAtt: [ LambdaRole , "Arn" ]
+      Runtime: nodejs14.x
+      Timeout: 60
+  DDBAnnotationsLoadSaveBooks:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        -
+          AttributeName: "asin"
+          AttributeType: "S"
+      KeySchema:
+        -
+          AttributeName: "asin"
+          KeyType: "HASH"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      TableName: "DynamoDbAnnotationsLoadSave-Books"
+      BillingMode: PAY_PER_REQUEST
+  InitializeBooks:
+    Type: Custom::InitFunction
+    DependsOn: DDBAnnotationsLoadSaveBooks
+    Properties:
+      ServiceToken:
+         Fn::GetAtt: [ InitFunction , "Arn" ]
+      DynamoTableName:
+        Ref: DDBAnnotationsLoadSaveBooks

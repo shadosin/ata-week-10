@@ -1,0 +1,109 @@
+Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: dynamodbAccessRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - dynamodb:*
+              Resource: !GetAtt DDBAnnotationsLoadSaveVideoGames.Arn
+  InitFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: >
+          const AWS = require("aws-sdk");
+          const response = require('./cfn-response');
+          const docClient = new AWS.DynamoDB.DocumentClient();
+          exports.handler = function(event, context) {
+              console.log(JSON.stringify(event,null,2));
+               var params = {
+                  RequestItems: {
+                   "DynamoDbAnnotationsLoadSave-VideoGames": [
+                     {
+                      PutRequest: {
+                       Item: {
+                        title: "Deus Ex",
+                        console: "PlayStation 2",
+                        release_year: 2000,
+                        description: "Set in a dystopian world during the 2050s, the central plot follows the story of JC Denton, an anti-terrorist agent employed by the United Nations Anti-Terrorist Coalition (UNATCO), as he uncovers a deep conspiracy."
+                       }
+                      }
+                     },
+                     {
+                      PutRequest: {
+                       Item: {
+                        title: "Mario Kart 8 Deluxe",
+                        console: "Nintendo Switch",
+                        release_year: 2017,
+                        description: "Hit the road with the definitive version of Mario Kart 8 and play anytime, anywhere! Race your friends or battle them in a revised battle mode on new and returning battle courses.",
+                        num_players: "1-4"
+                       }
+                      }
+                     },
+                     {
+                      PutRequest: {
+                       Item: {
+                        title: "Metal Gear Solid",
+                        console: "PlayStation",
+                        release_year: 1998,
+                        description: "Players control Solid Snake, a soldier who infiltrates a nuclear weapons facility to neutralize the terrorist threat from FOXHOUND, a renegade special forces unit. Snake must liberate hostages and stop the terrorists from launching a nuclear strike.",
+                        has_sequel: true
+                       }
+                      }
+                     }
+                    ]
+                  }
+                 };
+                 docClient.batchWrite(params, function(err, data) { if (err) {
+                    response.send(event, context, "FAILED", {});
+                  } else {
+                    response.send(event, context, "SUCCESS", {});
+                  }
+                });
+              };
+      Handler: index.handler
+      Role:
+        Fn::GetAtt: [ LambdaRole , "Arn" ]
+      Runtime: nodejs14.x
+      Timeout: 60
+  DDBAnnotationsLoadSaveVideoGames:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "title"
+          AttributeType: "S"
+        - AttributeName: "console"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "title"
+          KeyType: "HASH"
+        - AttributeName: "console"
+          KeyType: "RANGE"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      TableName: "DynamoDbAnnotationsLoadSave-VideoGames"
+      BillingMode: PAY_PER_REQUEST
+  InitializeDynamoDB:
+    Type: Custom::InitFunction
+    Properties:
+      ServiceToken:
+         Fn::GetAtt: [ InitFunction , "Arn" ]
+      DynamoTableName:
+        Ref: DDBAnnotationsLoadSaveVideoGames

@@ -1,0 +1,75 @@
+import groovy.xml.XmlSlurper
+
+plugins {
+    id 'ata-curriculum.snippets-conventions'
+    id 'ata-curriculum.integration-test-conventions'
+}
+
+checkstyle {
+    def suppressionFile = rootProject.file('Utilities/ATACheckstyle/configuration/checkstyle/unit1/suppressions.xml')
+    configProperties.put('checkstyle.suppression.filter', suppressionFile)
+}
+
+dependencies {
+    // Use JUnit test framework.
+    implementation group: 'org.reflections', name: 'reflections', version: '0.10.2'
+    testImplementation files('../gradle/lib/testinfrastructure-1.0.1.jar')
+    implementation('com.amazonaws:aws-java-sdk-s3:1.12.153')
+    implementation(platform('org.junit:junit-bom:5.8.0'))
+    implementation('org.junit.jupiter:junit-jupiter')
+}
+
+def wflowToTestsMap = [
+        'dynamodb-annotations-creating-a-book-test': [
+                'com.kenzie.dynamodb.annotationsloadsave.annotations.BookTest',
+        ],
+        'dynamodb-annotations-save-test': [
+                'com.kenzie.dynamodb.annotationsloadsave.save.BookIntegrationTest',
+        ],
+        'dynamodb-annotations-load-test': [
+                'com.kenzie.dynamodb.annotationsloadsave.load.BookDaoTest',
+        ],
+        'dynamodb-annotations-actor-movie-test': [
+                'com.kenzie.dynamodb.annotationsloadsave.actormovie.ActorMovieTest',
+                'com.kenzie.dynamodb.annotationsloadsave.actormovie.ActorMovieDaoTest',
+
+        ],
+        'dynamodb-annotations-video-game-test': [
+                'com.kenzie.dynamodb.annotationsloadsave.videogames.VideoGameTest',
+                'com.kenzie.dynamodb.annotationsloadsave.videogames.VideoGameDaoTest',
+        ]
+]
+
+wflowToTestsMap.forEach { wflowName, testList ->
+    tasks.register(wflowName) {
+        dependsOn wflowtest
+        test.doFirst {
+            filter {
+                testList.each { includeTestsMatching it }
+            }
+        }
+        test.finalizedBy(copyTestResults)
+    }
+}
+
+tasks.register('copyTestResults', Copy) {
+    from(layout.buildDirectory.dir("test-results")) {
+       include "test/TEST-com.kenzie.dynamodb.annotationsloadsave.BookIntegrationTest.xml"
+    }
+    into layout.projectDirectory.dir("test-results")
+}
+
+def integrationResults = ["test/TEST-com.kenzie.dynamodb.annotationsloadsave.BookIntegrationTest.xml"]
+
+tasks.register('verifytests-bookintegration') {
+    dependsOn tasks.copyTestResults
+    doLast {
+        integrationResults.forEach {
+            def testResult = layout.projectDirectory.dir("test-results").file(it).asFile
+            def attributesMap = new XmlSlurper().parse(testResult).attributes()
+            assert attributesMap.get("skipped") == "0"
+            assert attributesMap.get("failures") == "0"
+            assert attributesMap.get("errors") == "0"
+        }
+    }
+}

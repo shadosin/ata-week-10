@@ -1,0 +1,6 @@
+rootProject.name = 'ata-week-10'
+include ':Utilities'
+include ':DynamoDB:Annotations'
+include ':CustomExceptions:UserExistsException'
+include ':CustomExceptions:IceCreamParlor'
+include ':GroupWork'
