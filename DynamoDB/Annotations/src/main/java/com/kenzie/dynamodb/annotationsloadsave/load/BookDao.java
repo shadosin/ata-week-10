@@ -1,6 +1,8 @@
 package com.kenzie.dynamodb.annotationsloadsave.load;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.kenzie.dynamodb.DynamoDbClientProvider;
 
 /**
  * Data access object to retrieve Book items from DynamoDB.
@@ -23,7 +25,9 @@ public class BookDao {
      * @return book returns the book loaded from the database
      */
     public Book getBook(String key) {
-        //TODO: Implement
-        return null;
+
+        Book book = mapper.load(Book.class, key);
+
+        return book;
     }
 }

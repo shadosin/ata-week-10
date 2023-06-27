@@ -33,5 +33,6 @@ public class BookDao {
      */
     public void saveBook(Book book) {
         // PARTICIPANTS: Save a Book to the table
+        dynamoDBMapper.save(book);
     }
 }
