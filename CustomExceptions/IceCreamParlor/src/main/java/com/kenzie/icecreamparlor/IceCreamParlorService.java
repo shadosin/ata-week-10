@@ -1,5 +1,6 @@
 package com.kenzie.icecreamparlor;
 
+import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.google.common.collect.Lists;
 import com.kenzie.icecreamparlor.dao.CartonDao;
@@ -24,7 +25,7 @@ public class IceCreamParlorService {
     private CartonDao cartonDao;
 
     public IceCreamParlorService() {
-        cartonDao = new S3CartonDao();
+        cartonDao = new DynamoDBCartonDao();
     }
 
     public IceCreamParlorService(CartonDao cartonDao) {
@@ -37,10 +38,22 @@ public class IceCreamParlorService {
      * @param flavorName - the flavor of the ice cream scoop to retrieve.
      * @return a scoop of the desired ice cream flavor.
      */
-    public Scoop getScoop(String flavorName) {
-        Flavor scoopFlavor = cartonDao.getCarton(flavorName).getFlavor();
+    public Scoop getScoop(String flavorName) throws NoSuchFlavorException, FlavorOutOfStockException {
+        try {
+            Carton carton = cartonDao.getCarton(flavorName);
 
-        return new Scoop(scoopFlavor);
+            if (carton.getScoopsLeft() <= 0) {
+                throw new FlavorOutOfStockException();
+            }
+
+            carton.removeScoops(1);
+            cartonDao.saveCarton(carton);
+
+            return new Scoop(carton.getFlavor());
+        } catch (ResourceNotFoundException e) {
+            throw new NoSuchFlavorException(String.format("We don't have that flavor"));
+
+        }
     }
 
     /**
@@ -57,11 +70,10 @@ public class IceCreamParlorService {
         for (String flavorName : flavorNames) {
             try {
                 flavors.add(cartonDao.getCarton(flavorName).getFlavor());
-            } catch (AmazonS3Exception ex) {
+            } catch (ResourceNotFoundException ex) {
                 throw new NoSuchFlavorException(String.format("We don't serve a flavor called [%s]!", flavorName));
             }
         }
-
         return new Sundae(flavors);
     }
 

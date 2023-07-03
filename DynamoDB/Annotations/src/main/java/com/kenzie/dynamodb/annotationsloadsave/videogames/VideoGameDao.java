@@ -34,6 +34,7 @@ public class VideoGameDao {
      * @param videoGame is the item that is being saved to the table
      */
     public void storeGameDetails(VideoGame videoGame) {
+        mapper.save(videoGame);
     }
 
     /**
@@ -42,6 +43,9 @@ public class VideoGameDao {
      */
     public VideoGame getMarioKartDeluxe() {
         // PARTICIPANTS: return the correct game
-        return new VideoGame();
+        VideoGame marioKartDeluxe = mapper.load(VideoGame.class,
+                "Mario Kart 8 Deluxe",
+                "Nintendo Switch");
+        return marioKartDeluxe;
     }
 }

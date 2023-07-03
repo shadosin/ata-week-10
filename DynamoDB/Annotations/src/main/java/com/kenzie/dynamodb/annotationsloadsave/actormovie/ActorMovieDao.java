@@ -25,8 +25,8 @@ public class ActorMovieDao {
      * @return actor returns the actor loaded from the database
      */
     public ActorMovie getActorMovie(String partitionKey, String sortKey) {
-        //TODO
-        return null;
+        ActorMovie movie = mapper.load(ActorMovie.class, partitionKey, sortKey);
+        return movie;
     }
 
     /**
@@ -36,5 +36,6 @@ public class ActorMovieDao {
      */
     public void saveActorMovie(ActorMovie actorMovie) {
         // PARTICIPANTS: Save an ActorMovie to the table
+        mapper.save(actorMovie);
     }
 }

@@ -8,6 +8,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 /**
  * ActorMovie POJO which maps to the ActorMovies table.
  */
+@DynamoDBTable(tableName = "DynamoDbAnnotationsLoadSave-ActorMovies")
 public class ActorMovie {
     private String actor;
     private String movieTitle;
@@ -15,6 +16,7 @@ public class ActorMovie {
     private Integer yearReleased;
     private Boolean watched;
 
+    @DynamoDBHashKey(attributeName = "actor")
     public String getActor() {
         return actor;
     }
@@ -23,6 +25,7 @@ public class ActorMovie {
         this.actor = actor;
     }
 
+    @DynamoDBRangeKey(attributeName = "movie_title")
     public String getMovieTitle() {
         return movieTitle;
     }
@@ -31,6 +34,7 @@ public class ActorMovie {
         this.movieTitle = movieTitle;
     }
 
+    @DynamoDBAttribute(attributeName = "director")
     public String getDirector() {
         return director;
     }
@@ -39,6 +43,7 @@ public class ActorMovie {
         this.director = director;
     }
 
+    @DynamoDBAttribute(attributeName = "year_released")
     public Integer getYearReleased() {
         return yearReleased;
     }
@@ -47,6 +52,7 @@ public class ActorMovie {
         this.yearReleased = yearReleased;
     }
 
+    @DynamoDBAttribute(attributeName = "have_watched")
     public Boolean isWatched() {
         return watched;
     }

@@ -1,5 +1,8 @@
 package com.kenzie.dynamodb.annotationsloadsave.videogames;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 
 import java.util.Objects;
@@ -15,6 +18,7 @@ public class VideoGame {
     private Boolean hasSequel;
     private Integer numPlayers;
 
+    @DynamoDBHashKey(attributeName = "title")
     public String getTitle() {
         return title;
     }
@@ -22,7 +26,7 @@ public class VideoGame {
     public void setTitle(String title) {
         this.title = title;
     }
-
+    @DynamoDBRangeKey(attributeName = "console")
     public String getConsole() {
         return console;
     }
@@ -30,7 +34,7 @@ public class VideoGame {
     public void setConsole(String console) {
         this.console = console;
     }
-
+    @DynamoDBAttribute(attributeName = "release_year")
     public Integer getReleaseYear() {
         return releaseYear;
     }
@@ -38,7 +42,7 @@ public class VideoGame {
     public void setReleaseYear(Integer releaseYear) {
         this.releaseYear = releaseYear;
     }
-
+    @DynamoDBAttribute(attributeName = "description")
     public String getDescription() {
         return description;
     }
@@ -46,7 +50,7 @@ public class VideoGame {
     public void setDescription(String description) {
         this.description = description;
     }
-
+    @DynamoDBAttribute(attributeName = "has_sequel")
     public Boolean getHasSequel() {
         return hasSequel;
     }
@@ -54,7 +58,7 @@ public class VideoGame {
     public void setHasSequel(Boolean hasSequel) {
         this.hasSequel = hasSequel;
     }
-
+    @DynamoDBAttribute(attributeName = "num_players")
     public Integer getNumPlayers() {
         return numPlayers;
     }

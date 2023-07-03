@@ -39,10 +39,12 @@ public class UserManager {
 
         // PARTICIPANTS: Update this method to throw your new exception if the email is already in use.
 
-        if (!(isEmailInUse(user.getEmail()))) {
-            userList.add(user);
-        } 
+        if ((isEmailInUse(user.getEmail()))) {
+            throw new UserExistsException("User with email already exists: " + user.getEmail());
+        } else {
 
-        return user;
+            userList.add(user);
+            return user;
+        }
     }
 }

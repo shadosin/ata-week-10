@@ -39,4 +39,7 @@ public class TopicMessageDao {
     }
 
     // PARTICIPANTS: A method does not yet exist to save a TopicMessage to our Messages table
+    public void saveTopicMessage(TopicMessage message){
+        mapper.save(message);
+    }
 }
